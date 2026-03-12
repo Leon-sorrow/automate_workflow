@@ -54,6 +54,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Existing project URL to improve (optional)",
     )
     parser.add_argument(
+        "--goals",
+        default="",
+        help="Project goals text (written to project/01_goals.md if not already set)",
+    )
+    parser.add_argument(
         "--goal-issue",
         default="",
         help="GitHub issue number or URL to seed goals",
@@ -84,6 +89,7 @@ def main(argv: list[str] | None = None) -> None:
         store=store,
         provider=provider,
         goal_issue=args.goal_issue,
+        goals=args.goals,
         fixed_parts_path=args.fixed_parts_path,
         existing_project_url=args.existing_project_url,
     )

@@ -14,6 +14,10 @@ on:
           - plan
           - review
           - finalize
+      goals:
+        description: "Project goals text (optional, fills project/01_goals.md if not already set)"
+        required: false
+        default: ""
       existing_project_url:
         description: "Existing project URL to improve (optional)"
         required: false
@@ -56,6 +60,14 @@ jobs:
 
       - name: Install dependencies
         run: pip install -e ".[dev]"
+
+      - name: Write goals if provided
+        if: inputs.goals != ''
+        env:
+          GOALS_TEXT: ${{ inputs.goals }}
+        run: |
+          mkdir -p project
+          python -c "import os, pathlib; pathlib.Path('project/01_goals.md').write_text(os.environ['GOALS_TEXT'], encoding='utf-8')"
 
       - name: Run orchestrator stage
         env:
