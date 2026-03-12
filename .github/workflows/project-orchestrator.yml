@@ -14,6 +14,10 @@ on:
           - plan
           - review
           - finalize
+      existing_project_url:
+        description: "Existing project URL to improve (optional)"
+        required: false
+        default: ""
       goal_issue:
         description: "Issue number or URL to seed goals (optional)"
         required: false
@@ -63,7 +67,8 @@ jobs:
             --model "${{ inputs.model }}" \
             ${{ inputs.allow_stub == 'true' && '--allow-stub' || '' }} \
             ${{ inputs.goal_issue != '' && format('--goal-issue "{0}"', inputs.goal_issue) || '' }} \
-            ${{ inputs.fixed_parts_path != '' && format('--fixed-parts-path "{0}"', inputs.fixed_parts_path) || '' }}
+            ${{ inputs.fixed_parts_path != '' && format('--fixed-parts-path "{0}"', inputs.fixed_parts_path) || '' }} \
+            ${{ inputs.existing_project_url != '' && format('--existing-project-url "{0}"', inputs.existing_project_url) || '' }}
 
       - name: Commit artifacts
         run: |

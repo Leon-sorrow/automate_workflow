@@ -49,6 +49,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Fail instead of writing stub artifacts",
     )
     parser.add_argument(
+        "--existing-project-url",
+        default="",
+        help="Existing project URL to improve (optional)",
+    )
+    parser.add_argument(
         "--goal-issue",
         default="",
         help="GitHub issue number or URL to seed goals",
@@ -80,5 +85,6 @@ def main(argv: list[str] | None = None) -> None:
         provider=provider,
         goal_issue=args.goal_issue,
         fixed_parts_path=args.fixed_parts_path,
+        existing_project_url=args.existing_project_url,
     )
     print(f"[orchestrator] Stage '{args.stage}' completed successfully.")
