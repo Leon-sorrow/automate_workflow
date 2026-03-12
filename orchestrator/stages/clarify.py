@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 from orchestrator.artifacts import ArtifactStore
 from orchestrator.llm.base import LLMProvider
 
@@ -55,12 +57,19 @@ def run(
     provider: LLMProvider,
     goal_issue: str = "",
     fixed_parts_path: str = "",
+    goals: str = "",
+    **_kwargs: object,
 ) -> None:
     """Execute the clarify stage."""
-    # Ensure goals artifact exists (seed from template if missing)
+    # Ensure goals artifact exists (seed from provided text, interactive input, template, or stub)
     if not store.exists("goals"):
-        template = store.read_template("01_goals")
-        store.write("goals", template or _default_goals_stub(goal_issue))
+        if goals:
+            store.write("goals", goals)
+        elif sys.stdin.isatty():
+            store.write("goals", _prompt_goals_interactively(goal_issue))
+        else:
+            template = store.read_template("01_goals")
+            store.write("goals", template or _default_goals_stub(goal_issue))
 
     goals_content = store.read("goals")
 
@@ -101,3 +110,46 @@ def _default_goals_stub(goal_issue: str) -> str:
 ## Definition of Done
 - (describe){issue_ref}
 """
+
+
+def _collect_lines(prompt: str) -> list[str]:
+    """Collect non-empty lines from stdin until an empty line is entered."""
+    print(f"\n{prompt}")
+    print("  (enter each item on its own line; empty line to finish)")
+    lines: list[str] = []
+    while True:
+        try:
+            line = input("  > ")
+        except EOFError:
+            break
+        stripped = line.strip()
+        if not stripped:
+            break
+        lines.append(stripped)
+    return lines
+
+
+def _prompt_goals_interactively(goal_issue: str) -> str:
+    """Interactively collect project goals from the user via stdin."""
+    print("\n[clarify] No project goals file found.")
+    print("[clarify] Please enter your project goals interactively.")
+    print("[clarify] Press Enter on an empty line to move to the next section.\n")
+
+    goals_lines = _collect_lines("Goals — what should this project achieve?")
+    constraints_lines = _collect_lines("Constraints (tech stack, time, budget, etc.)")
+    dod_lines = _collect_lines("Definition of Done — what does 'finished' look like?")
+
+    def fmt(lines: list[str]) -> str:
+        return "\n".join(f"- {line}" for line in lines) if lines else "- (not provided)"
+
+    issue_ref = f"\n\n## References\n- {goal_issue}" if goal_issue else ""
+    return (
+        "# Project Goals\n\n"
+        "## Goals\n"
+        f"{fmt(goals_lines)}\n\n"
+        "## Constraints\n"
+        f"{fmt(constraints_lines)}\n\n"
+        "## Definition of Done\n"
+        f"{fmt(dod_lines)}"
+        f"{issue_ref}\n"
+    )

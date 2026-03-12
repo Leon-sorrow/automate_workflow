@@ -14,11 +14,17 @@ This scaffold supports:
 **Required**
 - `project/01_goals.md` — your goals for the work.
 
+  You can provide this in three ways (in order of precedence):
+  1. **Via `--goals` CLI flag** (or the **goals** input in the Actions UI) — paste your goal text directly.
+  2. **Edit the file first** — copy `project/templates/01_goals.md` to `project/01_goals.md` and fill it in.
+  3. **Interactive prompt** — when running locally in a terminal without a pre-existing goals file, the CLI prompts you to enter goals section-by-section.
+
 **Optional (recommended for improving an existing project)**
 - **existing_project_url** — URL of the existing project/repo you want to improve (entered in the Actions UI).
   - Example: `https://github.com/org/repo`
 
 **Optional**
+- **goals** — project goals text; pasted directly into the Actions UI or passed via `--goals` on the CLI (fills `project/01_goals.md` if not already set)
 - **goal_issue** — issue number or URL to seed goals context
 - **fixed_parts_path** — path to an existing component description / architecture notes
 - **model** — GitHub Models model name (default: `"default"` → `gpt-4o-mini`)
@@ -29,6 +35,7 @@ This scaffold supports:
 1. Go to **Actions → Project Orchestrator → Run workflow**.
 2. Fill in the inputs:
    - **stage** – which stage to run (start with `clarify`)
+   - **goals** *(optional)* – paste your project goals text directly; the workflow writes it to `project/01_goals.md` before running
    - **existing_project_url** *(optional)* – existing project/repo URL you want to improve
    - **goal_issue** *(optional)*
    - **fixed_parts_path** *(optional)*
@@ -83,12 +90,17 @@ instance of it where `GitHubModelsProvider` is currently used in `cli.py`.
 ```bash
 pip install -e ".[dev]"
 
-# Seed goals first
+# Option 1: pass goals directly via --goals flag
+python -m orchestrator --stage clarify --goals "My project goal: build a REST API"
+
+# Option 2: pre-create the goals file
 cp project/templates/01_goals.md project/01_goals.md
 # edit project/01_goals.md …
-
-# Then run stages
 python -m orchestrator --stage clarify
+
+# Option 3: run interactively — the CLI prompts for goals if the file is missing
+python -m orchestrator --stage clarify
+
 python -m orchestrator --stage solutions
 # … etc.
 ```

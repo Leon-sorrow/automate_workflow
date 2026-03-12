@@ -34,6 +34,7 @@ def run(
     provider: LLMProvider,
     goal_issue: str = "",
     fixed_parts_path: str = "",
+    **_kwargs: object,
 ) -> None:
     """Execute the solutions stage."""
     requirements = store.read("requirements")
