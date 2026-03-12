@@ -1,12 +1,50 @@
-# automate_workflow
-Saas and research
-
----
-
 # Auto Project Workflow
 
 A GitHub Actions–based **auto project workflow** scaffold that guides a project
 through a staged lifecycle with human gates and LLM-assisted artifact generation.
+
+This scaffold supports:
+- **New projects** (start from goals → generate requirements/design/plan)
+- **Improving an existing project** (provide an existing project URL and constraints, then generate structured artifacts)
+
+## Quick start
+
+### What you should provide
+
+**Required**
+- `project/01_goals.md` — your goals for the work.
+
+**Optional (recommended for improving an existing project)**
+- **existing_project_url** — URL of the existing project/repo you want to improve (entered in the Actions UI).
+  - Example: `https://github.com/org/repo`
+
+**Optional**
+- **goal_issue** — issue number or URL to seed goals context
+- **fixed_parts_path** — path to an existing component description / architecture notes
+- **model** — GitHub Models model name (default: `"default"` → `gpt-4o-mini`)
+- **allow_stub** — when `true` (default), writes stub artifacts if LLM is unavailable
+
+### Run from the GitHub Actions UI (recommended)
+
+1. Go to **Actions → Project Orchestrator → Run workflow**.
+2. Fill in the inputs:
+   - **stage** – which stage to run (start with `clarify`)
+   - **existing_project_url** *(optional)* – existing project/repo URL you want to improve
+   - **goal_issue** *(optional)*
+   - **fixed_parts_path** *(optional)*
+   - **model** *(optional)*
+   - **allow_stub** *(optional)*
+3. Run the workflow.
+4. The workflow commits any new artifacts back to the branch automatically under `project/`.
+
+### Typical run order
+
+```
+clarify → solutions → (human picks option) → design → plan → review → finalize
+```
+
+Between `solutions` and `design` you must manually edit
+`project/03_solution_options.md` to mark your chosen option before running `design`.
 
 ## Lifecycle stages
 
@@ -23,40 +61,20 @@ Each stage **enforces prerequisites**: if earlier artifacts are missing the
 workflow exits with a clear error message so nothing proceeds until the
 previous step is complete.
 
-## Running from the GitHub Actions UI
-
-1. Go to **Actions → Project Orchestrator → Run workflow**.
-2. Fill in the inputs:
-   - **stage** – which stage to run (e.g. `clarify`)
-   - **goal_issue** *(optional)* – issue number or URL whose body seeds `01_goals.md`
-   - **fixed_parts_path** *(optional)* – path to an existing component description
-   - **model** *(optional)* – GitHub Models model name (default: `"default"` → `gpt-4o-mini`)
-   - **allow_stub** – when `true` (default), writes stub artifacts if LLM is unavailable
-3. The workflow commits any new artifacts back to the branch automatically.
-
-### Typical run order
-
-```
-clarify → solutions → (human picks option) → design → plan → review → finalize
-```
-
-Between `solutions` and `design` you must manually edit
-`project/03_solution_options.md` to mark your chosen option before running `design`.
-
 ## Configuring GitHub Models access
 
 1. Ensure your repository has a **`GITHUB_TOKEN`** with `models:read` permission
    (the default Actions token already has this for public repositories or if
    GitHub Models is enabled for your org/account).
 2. Set the `model` input to the model slug you want to use, e.g. `gpt-4o`,
-   `gpt-4o-mini`, `meta-llama-3.1-405b-instruct`, etc.  Leave it as `"default"`
+   `gpt-4o-mini`, `meta-llama-3.1-405b-instruct`, etc. Leave it as `"default"`
    to use `gpt-4o-mini`.
 3. If the LLM call fails (token missing, quota exceeded, …) and `allow_stub=true`,
    stub files are written with a `[STUB]` marker so you can fill them in manually.
 
 ### Using a different LLM provider
 
-`orchestrator/llm/base.py` defines the `LLMProvider` ABC.  Create a new class
+`orchestrator/llm/base.py` defines the `LLMProvider` ABC. Create a new class
 that implements `complete(system_prompt, user_prompt) -> str` and pass an
 instance of it where `GitHubModelsProvider` is currently used in `cli.py`.
 
@@ -114,4 +132,3 @@ project/
 tests/                         # pytest unit tests
 pyproject.toml                 # ruff + pytest config
 ```
-
