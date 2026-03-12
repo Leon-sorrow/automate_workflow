@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: orchestrator
-Version: 0.1.0
-Summary: Auto project workflow orchestrator with pluggable LLM providers
-Requires-Python: >=3.11
-Provides-Extra: dev
-Requires-Dist: ruff>=0.4.0; extra == "dev"
-Requires-Dist: pytest>=8.0.0; extra == "dev"
